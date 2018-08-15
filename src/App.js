@@ -4,26 +4,29 @@ import { Value } from 'slate';
 import logo from './logo.svg';
 import './App.css';
 
-const initialValue = Value.fromJSON({
-  document: {
-    nodes: [
-      {
-        object: 'block',
-        type: 'paragraph',
-        nodes: [
-          {
-            object: 'text',
-            leaves: [
-              {
-                text: 'A line of text in a paragraph'
-              }
-            ]
-          }
-        ]
-      }
-    ]
+const existingValue = JSON.parse(localStorage.getItem('content'));
+const initialValue = Value.fromJSON(
+  existingValue || {
+    document: {
+      nodes: [
+        {
+          object: 'block',
+          type: 'paragraph',
+          nodes: [
+            {
+              object: 'text',
+              leaves: [
+                {
+                  text: 'A line of text in a paragraph'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
-});
+);
 
 function MarkHotkey(options) {
   const { type, key } = options;
@@ -52,7 +55,14 @@ class App extends Component {
   };
 
   onChange = ({ value }) => {
+    if (value.document != this.state.value.document) {
+      console.log('onChange - value.document', value.document);
+      const content = JSON.stringify(value.toJSON());
+      console.log('onChange content', content);
+      localStorage.setItem('content', content);
+    }
     this.setState({ value });
+
   };
 
   renderMark = props => {

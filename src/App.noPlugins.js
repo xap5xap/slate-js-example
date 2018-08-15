@@ -25,26 +25,17 @@ const initialValue = Value.fromJSON({
   }
 });
 
-function MarkHotkey(options) {
-  const { type, key } = options;
-
-  return {
-    onKeyDown(event, change) {
-      if (!event.ctrlKey || event.key !== key) return;
-      event.preventDefault();
-      change.toggleMark(type);
-      return true;
-    }
-  };
+function BoldMark(props) {
+  return <strong>{props.children}</strong>;
 }
 
-const plugins = [
-  MarkHotkey({ type: 'bold', key: 'b' }),
-  MarkHotkey({ type: 'code', key: '`' }),
-  MarkHotkey({ type: 'italic', key: 'i' }),
-  MarkHotkey({ type: 'strikethrough', key: '~' }),
-  MarkHotkey({ type: 'underline', key: 'u' })
-];
+function CodeNode(props) {
+  return (
+    <pre {...props.attributes}>
+      <code>{props.children}</code>
+    </pre>
+  );
+}
 
 class App extends Component {
   state = {
@@ -52,21 +43,38 @@ class App extends Component {
   };
 
   onChange = ({ value }) => {
+    // console.log('onChange', value);
     this.setState({ value });
+  };
+
+  onKeyDown = (event, change) => {
+    if (!event.ctrlKey) return;
+
+    event.preventDefault();
+
+    switch (event.key) {
+      case '`':
+        const isCode = change.value.blocks.some(block => block.type === 'code');
+        change.setBlocks(isCode ? 'paragraph' : 'code');
+        return true;
+
+      case 'b':
+        change.addMark('bold');
+        return true;
+    }
+  };
+
+  renderNode = props => {
+    switch (props.node.type) {
+      case 'code':
+        return <CodeNode {...props} />;
+    }
   };
 
   renderMark = props => {
     switch (props.mark.type) {
       case 'bold':
-        return <strong>{props.children}</strong>;
-      case 'code':
-        return <code>{props.children}</code>;
-      case 'italic':
-        return <em>{props.children}</em>;
-      case 'strikethrough':
-        return <del>{props.children}</del>;
-      case 'underline':
-        return <u>{props.children}</u>;
+        return <BoldMark {...props} />;
     }
   };
 
@@ -82,9 +90,10 @@ class App extends Component {
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
         <Editor
-          plugins={plugins}
           value={this.state.value}
           onChange={this.onChange}
+          onKeyDown={this.onKeyDown}
+          renderNode={this.renderNode}
           renderMark={this.renderMark}
         />
       </div>

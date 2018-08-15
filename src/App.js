@@ -39,16 +39,15 @@ class App extends Component {
   };
 
   onChange = ({ value }) => {
-    console.log('onChange', value);
+    // console.log('onChange', value);
     this.setState({ value });
   };
 
   onKeyDown = (event, change) => {
-    console.log('onKeyDown', event.key);
-    if (event.key !== '&') return true;
-
+    if (event.key != '`' || !event.ctrlKey) return;
     event.preventDefault();
-    change.insertText('and');
+    const isCode = change.value.blocks.some(block => block.type === 'code');
+    change.setBlocks(isCode ? 'paragraph' : 'code');
     return true;
   };
 
@@ -58,9 +57,9 @@ class App extends Component {
         return <CodeNode {...props} />;
     }
   };
-  
+
   render() {
-    console.log('render', this.state);
+    // console.log('render', this.state);
     return (
       <div className="App">
         <header className="App-header">

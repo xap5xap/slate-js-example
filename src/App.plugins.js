@@ -1,11 +1,32 @@
 import React, { Component } from 'react';
 import { Editor } from 'slate-react';
-import Plain from 'slate-plain-serializer';
-
+import { Value } from 'slate';
+import logo from './logo.svg';
 import './App.css';
 
-const existingValue = localStorage.getItem('content');
-const initialValue = Plain.deserialize(existingValue || 'A string of plain text');
+const existingValue = JSON.parse(localStorage.getItem('content'));
+const initialValue = Value.fromJSON(
+  existingValue || {
+    document: {
+      nodes: [
+        {
+          object: 'block',
+          type: 'paragraph',
+          nodes: [
+            {
+              object: 'text',
+              leaves: [
+                {
+                  text: 'A line of text in a paragraph'
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+);
 
 function MarkHotkey(options) {
   const { type, key } = options;
@@ -34,9 +55,9 @@ class App extends Component {
   };
 
   onChange = ({ value }) => {
-    if (value.document !== this.state.value.document) {
+    if (value.document != this.state.value.document) {
       console.log('onChange - value.document', value.document);
-      const content = Plain.serialize(value);
+      const content = JSON.stringify(value.toJSON());
       console.log('onChange content', content);
       localStorage.setItem('content', content);
     }
@@ -63,7 +84,13 @@ class App extends Component {
     // console.log('render', this.state);
     return (
       <div className="App">
-      
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <h1 className="App-title">Welcome to React</h1>
+        </header>
+        <p className="App-intro">
+          To get started, edit <code>src/App.js</code> and save to reload.
+        </p>
         <Editor
           plugins={plugins}
           value={this.state.value}

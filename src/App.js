@@ -25,6 +25,10 @@ const initialValue = Value.fromJSON({
   }
 });
 
+function BoldMark(props) {
+  return <strong>{props.children}</strong>;
+}
+
 function CodeNode(props) {
   return (
     <pre {...props.attributes}>
@@ -44,17 +48,33 @@ class App extends Component {
   };
 
   onKeyDown = (event, change) => {
-    if (event.key != '`' || !event.ctrlKey) return;
+    if (!event.ctrlKey) return;
+
     event.preventDefault();
-    const isCode = change.value.blocks.some(block => block.type === 'code');
-    change.setBlocks(isCode ? 'paragraph' : 'code');
-    return true;
+
+    switch (event.key) {
+      case '`':
+        const isCode = change.value.blocks.some(block => block.type === 'code');
+        change.setBlocks(isCode ? 'paragraph' : 'code');
+        return true;
+
+      case 'b':
+        change.addMark('bold');
+        return true;
+    }
   };
 
   renderNode = props => {
     switch (props.node.type) {
       case 'code':
         return <CodeNode {...props} />;
+    }
+  };
+
+  renderMark = props => {
+    switch (props.mark.type) {
+      case 'bold':
+        return <BoldMark {...props} />;
     }
   };
 
@@ -74,6 +94,7 @@ class App extends Component {
           onChange={this.onChange}
           onKeyDown={this.onKeyDown}
           renderNode={this.renderNode}
+          renderMark={this.renderMark}
         />
       </div>
     );
